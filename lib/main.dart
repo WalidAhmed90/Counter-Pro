@@ -1,7 +1,24 @@
+import 'package:counter_pro/counter_model.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'counter_provider.dart';
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(CounterModelAdapter());
+  await Hive.openBox<CounterModel>('counter_box');
+
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => CounterProvider())
+    ],
+    child: MyApp(),
+  )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,34 +37,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class CounterScreen extends StatefulWidget {
+class CounterScreen extends StatelessWidget{
   const CounterScreen({super.key});
 
   @override
-  State<CounterScreen> createState() => _CounterScreenState();
-}
-
-class _CounterScreenState extends State<CounterScreen> {
-  int _counter = 0;
-  String _lastUpdated = "Never";
-
-  void _incrementCount(){
-    setState(() {
-      _counter++;
-      _lastUpdated = DateTime.now().toLocal().toString();
-    });
-  }
-
-  void _resetCount(){
-    setState(() {
-      _counter = 0;
-      _lastUpdated = "Reset at ${DateTime.now().toLocal()}";
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    bool isEven = _counter % 2 ==0;
+
+    final provider = Provider.of<CounterProvider>(context);
+
     return Scaffold(
       appBar: AppBar(title: Text('Counter Pro'),),
       body: Center(
@@ -60,13 +57,13 @@ class _CounterScreenState extends State<CounterScreen> {
                   fontWeight: FontWeight.bold
                 )
             ),
-            Text('$_counter', style: TextStyle(
+            Text('${provider.countryModel.count}', style: TextStyle(
               fontSize: 50,
               fontWeight: FontWeight.bold,
-              color: isEven ? Colors.green : Colors.red
+              color: provider.isEven() ? Colors.green : Colors.red
             ),),
             SizedBox(height: 20),
-            Text('Last updated: $_lastUpdated',
+            Text('Last updated: ${provider.countryModel.lastUpdated}',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14
@@ -77,11 +74,15 @@ class _CounterScreenState extends State<CounterScreen> {
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(onPressed: _incrementCount,
+          FloatingActionButton(onPressed: provider.increment,
           tooltip: 'Increment',
           child: Icon(Icons.add),),
           SizedBox(width: 20,),
-          FloatingActionButton(onPressed: _resetCount,
+          FloatingActionButton(onPressed: provider.decrement,
+          tooltip: 'Decrement',
+          child: Icon(Icons.remove),),
+          SizedBox(width: 20,),
+          FloatingActionButton(onPressed: provider.reset,
           tooltip: 'Reset',
           child: Icon(Icons.refresh),)
         ],
