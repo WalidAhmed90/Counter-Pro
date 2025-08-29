@@ -57,13 +57,13 @@ class CounterScreen extends StatelessWidget{
                   fontWeight: FontWeight.bold
                 )
             ),
-            Text('${provider.countryModel.count}', style: TextStyle(
+            Text('${provider.counterModel.count}', style: TextStyle(
               fontSize: 50,
               fontWeight: FontWeight.bold,
               color: provider.isEven() ? Colors.green : Colors.red
             ),),
             SizedBox(height: 20),
-            Text('Last updated: ${provider.countryModel.lastUpdated}',
+            Text('Last updated: ${provider.counterModel.lastUpdated}',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14
